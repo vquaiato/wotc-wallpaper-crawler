@@ -5,16 +5,16 @@ from threading import Thread
 
 base_url = "http://magic.wizards.com/en/see-more-wallpaper?page={page}&filter_by=DESC&artist=-1&expansion=&title="
 
-def get_url(page):
-    return base_url.format(page=page)
+def get_url_for_page_index(page_index):
+    return base_url.format(page=page_index)
 
-def read(url):
+def load_json_from(url):
     u = urlopen(url)
     contents = u.read()
     return json.loads(contents.decode())
 
 def load_wallpaper_links(current_url):
-    contents = read(current_url)['data']
+    contents = load_json_from(current_url)['data']
     wallpaper_links = re.findall(r'(?<=download=\")(http\S*2560x1600\S*\.jpg)', contents, re.MULTILINE)
 
     if(wallpaper_links == []):
@@ -25,7 +25,7 @@ def load_wallpaper_links(current_url):
 
     return wallpaper_links
 
-def download_files(wallpaper_links):
+def init_images_downloads_for(wallpaper_links):
     allowed_threads = 5
     for wallpaper in wallpaper_links:
         while(threading.activeCount() > allowed_threads):
@@ -41,8 +41,8 @@ def download_file(wallpaper):
 
 def start():
     for page in range(0, 110):
-        url = get_url(page)
+        url = get_url_for_page_index(page)
         wall_paper_urls = load_wallpaper_links(url)
-        download_files(wall_paper_urls)
+        init_images_downloads_for(wall_paper_urls)
 
 start()
